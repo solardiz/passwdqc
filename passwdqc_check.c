@@ -333,7 +333,7 @@ static int is_based(const passwdqc_params_qc_t *params,
 					if (!isalpha((int)(unsigned char)original[pos])) {
 						if (j == params->match_length)
 							goto next_match_length;
-						bias++;
+						passphrase_bias = ++bias;
 						break;
 					}
 				} else {
