@@ -328,6 +328,8 @@ static int is_based(const passwdqc_params_qc_t *params,
  * The zero bias optimization further below would be wrong, so skip it. */
 						if (!++bias)
 							goto next_match_length;
+/* Do discount non-words or leetspeak from passphrases */
+						passphrase_bias = bias;
 					}
 				} else {
 					passphrase_bias = bias;
