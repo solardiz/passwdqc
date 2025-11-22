@@ -315,9 +315,14 @@ static int is_based(const passwdqc_params_qc_t *params,
 					return 1;
 				}
 			} else { /* discount */
+				int passphrase_bias = 0;
+
+				/* discount j - (match_length + bias) chars */
+				bias = (int)params->match_length - j;
+
 /* Require a 1 character longer match for substrings containing leetspeak
  * when matching against dictionary words */
-				bias = -1;
+				bias--;
 				if ((flags & F_MODE) == F_WORD) { /* words */
 					int pos = i, end = i + j;
 					if (flags & F_REV) { /* reversed */
@@ -328,16 +333,16 @@ static int is_based(const passwdqc_params_qc_t *params,
 					if (!isalpha((int)(unsigned char)original[pos])) {
 						if (j == params->match_length)
 							goto next_match_length;
-						bias = 0;
+						bias++;
 						break;
 					}
+				} else {
+					passphrase_bias = bias;
 				}
 
-				/* discount j - (match_length + bias) chars */
-				bias += (int)params->match_length - j;
 				/* bias <= -1 */
 				if (bias < worst_bias) {
-					if (is_simple(params, original, bias, (flags & F_MODE) == F_WORD ? 0 : bias))
+					if (is_simple(params, original, bias, passphrase_bias))
 						return 1;
 					worst_bias = bias;
 				}
