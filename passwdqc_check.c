@@ -88,8 +88,8 @@ static int expected_different(int charset, int length)
  * The biases do not affect the number of different characters, character
  * classes, and word count.
  */
-static int is_simple(const passwdqc_params_qc_t *params, const char *newpass,
-    int bias, int passphrase_bias)
+static int is_simple(const passwdqc_params_qc_t *params,
+    const char *newpass, int bias, int passphrase_bias)
 {
 	int length, classes, words, chars;
 	int digits, lowers, uppers, others, unknowns;
@@ -271,8 +271,7 @@ static void clean(char *dst)
  * or partially discounted for the purpose of the length check.
  */
 static int is_based(const passwdqc_params_qc_t *params,
-    const char *haystack, const char *needle, const char *original,
-    unsigned int flags)
+    const char *haystack, const char *needle, const char *original, unsigned int flags)
 {
 	char *scratch;
 	int length;
@@ -307,9 +306,7 @@ static int is_based(const passwdqc_params_qc_t *params,
 					if (!(flags & F_REV)) /* not reversed */
 						pos = i;
 					memcpy(scratch, original, pos);
-					memcpy(&scratch[pos],
-					    &original[pos + j],
-					    length + 1 - (pos + j));
+					memcpy(&scratch[pos], &original[pos + j], length + 1 - (pos + j));
 				}
 				/* add credit for match_length - 1 chars */
 				bias = params->match_length - 1;
@@ -328,8 +325,7 @@ static int is_based(const passwdqc_params_qc_t *params,
 						end = length - i;
 					}
 					for (; pos < end; pos++)
-					if (!isalpha((int)(unsigned char)
-					    original[pos])) {
+					if (!isalpha((int)(unsigned char)original[pos])) {
 						if (j == params->match_length)
 							goto next_match_length;
 						bias = 0;
@@ -341,8 +337,7 @@ static int is_based(const passwdqc_params_qc_t *params,
 				bias += (int)params->match_length - j;
 				/* bias <= -1 */
 				if (bias < worst_bias) {
-					if (is_simple(params, original, bias,
-					    (flags & F_MODE) == F_WORD ? 0 : bias))
+					if (is_simple(params, original, bias, (flags & F_MODE) == F_WORD ? 0 : bias))
 						return 1;
 					worst_bias = bias;
 				}
