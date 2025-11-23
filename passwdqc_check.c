@@ -336,8 +336,6 @@ static int is_based(const passwdqc_params_qc_t *params,
  * The zero bias optimization further below would be wrong, so skip it. */
 						if (!++bias)
 							goto next_match_length;
-/* Do discount non-words or leetspeak from passphrases */
-						passphrase_bias = bias;
 					}
 				} else {
 					passphrase_bias = bias;
@@ -493,14 +491,17 @@ static const char *is_word_based(const passwdqc_params_qc_t *params,
 		if (!(f = fopen(params->wordlist, "r")))
 			goto out;
 		while (read_line(f, buf)) {
+			unsigned int flags = 0;
+			if (params->match_length &&
+			    strlen(buf) >= (size_t)params->match_length)
+				flags = is_word_by_length(buf, strlen(buf)) ? F_WORD : F_SEQ;
 			unify(buf, buf);
 			if (!strcmp(buf, unified) || !strcmp(buf, reversed))
 				goto out_wordlist;
-			if (!params->match_length ||
-			    strlen(buf) < (size_t)params->match_length)
+			if (!flags)
 				continue;
-			if (is_based(params, buf, unified, original, F_WORD) ||
-			    is_based(params, buf, reversed, original, F_WORD|F_REV)) {
+			if (is_based(params, buf, unified, original, flags) ||
+			    is_based(params, buf, reversed, original, flags | F_REV)) {
 out_wordlist:
 				reason = REASON_WORDLIST;
 				goto out;
