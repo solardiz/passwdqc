@@ -509,6 +509,8 @@ static const char *is_word_based(const passwdqc_params_qc_t *params,
 			if (q - word < params->match_length)
 				continue;
 			unify(word_unified, word);
+			if (!strcmp(word_unified, unified) || !strcmp(word_unified, reversed))
+				goto out_wordlist;
 			if (is_based(params, word_unified, word, unified, original, F_WORD) ||
 			    is_based(params, word_unified, word, reversed, original, F_WORD|F_REV))
 				goto out_wordlist;
