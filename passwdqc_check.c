@@ -328,7 +328,8 @@ static int is_based(const passwdqc_params_qc_t *params,
 							goto next_match_length;
 /* Do discount non-words from passphrases */
 						if (length >= params->min[2] && /* optimization */
-						    !is_word_by_length(haystack_original + (p - haystack), j))
+						    (length - j < params->passphrase_words * 2 ||
+						    !is_word_by_length(haystack_original + (p - haystack), j)))
 							passphrase_bias = bias;
 					}
 				} else {
@@ -509,8 +510,6 @@ static const char *is_word_based(const passwdqc_params_qc_t *params,
 			if (q - word < params->match_length)
 				continue;
 			unify(word_unified, word);
-			if (!strcmp(word_unified, unified) || !strcmp(word_unified, reversed))
-				goto out_wordlist;
 			if (is_based(params, word_unified, word, unified, original, F_WORD) ||
 			    is_based(params, word_unified, word, reversed, original, F_WORD|F_REV))
 				goto out_wordlist;
