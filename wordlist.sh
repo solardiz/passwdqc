@@ -8,8 +8,8 @@
 set -e
 trap 'echo "Terminated early" >&2' EXIT PIPE TERM
 
-COUNT1=19131 # corresponds to HIBPv8 10000+ hits
-COUNT2=12187
+COUNT1=100032 # corresponds to HIBPv8 2758+ hits
+COUNT2=63579
 IN1="git -C ../john show b1cb78e1db0243f9dd4c9295c570f482eaf7236f:run/password.lst"
 IN2="cat ../john/run/password.lst"
 LIST=wordlist.lst
