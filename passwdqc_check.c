@@ -301,17 +301,6 @@ static int is_based(const passwdqc_params_qc_t *params,
 	if (haystack_length < params->match_length)
 		return 0;
 
-	if ((flags & F_MODE) != F_RM) { /* discount */
-		worst_bias = (int)params->match_length - 1 - haystack_length;
-		for (i = 0; i < 5; i++) {
-			if (length >= params->min[i] &&
-			    length + worst_bias < params->min[i])
-				break;
-		}
-		if (i == 5)
-			return 0;
-	}
-
 	scratch = NULL;
 	worst_bias = 0;
 
@@ -372,9 +361,12 @@ static int is_based(const passwdqc_params_qc_t *params,
 
 				/* bias <= -1 */
 				if (bias < worst_bias) {
-					if (is_simple(params, needle_original, bias, passphrase_bias) > 0)
-						return 1;
 					worst_bias = bias;
+					bias = is_simple(params, needle_original, bias, passphrase_bias);
+					if (bias > 0)
+						return 1;
+					if ((int)params->match_length - 1 - haystack_length >= bias)
+						goto out;
 				}
 			}
 		}
@@ -388,6 +380,7 @@ next_match_length:
 		;
 	}
 
+out:
 	clean(scratch);
 
 	return 0;
