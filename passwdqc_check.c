@@ -88,6 +88,9 @@ static int expected_different(int charset, int length)
  * because of a dictionary word, which is perfectly normal for a passphrase.
  * The biases do not affect the number of different characters, character
  * classes, and word count.
+ *
+ * Returns 1 if the password is too simple, or <= 0 to indicate how much room
+ * there is for a possible bias while passing for the same password class.
  */
 static int is_simple(const passwdqc_params_qc_t *params,
     const char *newpass, int bias, int passphrase_bias)
@@ -162,31 +165,31 @@ static int is_simple(const passwdqc_params_qc_t *params,
 	case 1:
 		if (length + bias >= params->min[0] &&
 		    chars >= expected_different(10, params->min[0]) - 1)
-			return 0;
+			return params->min[0] - length;
 		return 1;
 
 	case 2:
 		if (length + bias >= params->min[1] &&
 		    chars >= expected_different(36, params->min[1]) - 1)
-			return 0;
+			return params->min[1] - length;
 		if (!params->passphrase_words ||
 		    words < params->passphrase_words)
 			continue;
 		if (length + passphrase_bias >= params->min[2] &&
 		    chars >= expected_different(27, params->min[2]) - 1)
-			return 0;
+			return params->min[2] - length;
 		continue;
 
 	case 3:
 		if (length + bias >= params->min[3] &&
 		    chars >= expected_different(62, params->min[3]) - 1)
-			return 0;
+			return params->min[3] - length;
 		continue;
 
 	case 4:
 		if (length + bias >= params->min[4] &&
 		    chars >= expected_different(95, params->min[4]) - 1)
-			return 0;
+			return params->min[4] - length;
 		continue;
 	}
 
@@ -341,7 +344,7 @@ static int is_based(const passwdqc_params_qc_t *params,
 				memcpy(&scratch[pos], &needle_original[pos + j], length + 1 - (pos + j));
 				/* add credit for match_length - 1 chars */
 				bias = params->match_length - 1;
-				if (is_simple(params, scratch, bias, bias)) {
+				if (is_simple(params, scratch, bias, bias) > 0) {
 					clean(scratch);
 					return 1;
 				}
@@ -369,7 +372,7 @@ static int is_based(const passwdqc_params_qc_t *params,
 
 				/* bias <= -1 */
 				if (bias < worst_bias) {
-					if (is_simple(params, needle_original, bias, passphrase_bias))
+					if (is_simple(params, needle_original, bias, passphrase_bias) > 0)
 						return 1;
 					worst_bias = bias;
 				}
@@ -642,7 +645,7 @@ const char *passwdqc_check(const passwdqc_params_qc_t *params,
 		goto out;
 	}
 
-	if (is_simple(params, newpass, 0, 0)) {
+	if (is_simple(params, newpass, 0, 0) > 0) {
 		reason = REASON_SIMPLE;
 		if (length < (size_t)params->min[1] &&
 		    params->min[1] <= params->max)
