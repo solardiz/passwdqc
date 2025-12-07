@@ -337,9 +337,9 @@ static int is_based(const passwdqc_params_qc_t *params,
 	for (j = potential_match_length; j >= params->match_length; j--)
 	if (i + j <= length) {
 		int bias = 0;
-		char save = needle[i + j];
-		needle[i + j] = 0;
-		for (p = haystack; (p = strstr(p, &needle[i])); p++) {
+		for (p = haystack; (p = memchr(p, needle[i], haystack_length - (p - haystack))) &&
+		    j <= haystack_length - (p - haystack); p++)
+		if (needle[i + 1] == p[1] && (j <= 2 || !memcmp(p + 2, &needle[i + 2], j - 2))) {
 			int pos = (flags & F_REV) /* reversed */ ? length - (i + j) : i;
 			if ((flags & F_MODE) == F_RM) { /* remove & credit */
 				if (!scratch) {
@@ -382,7 +382,6 @@ static int is_based(const passwdqc_params_qc_t *params,
 					break;
 			}
 		}
-		needle[i + j] = save;
 	}
 
 	clean(scratch);
