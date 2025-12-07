@@ -126,6 +126,9 @@ static int is_simple(const passwdqc_params_qc_t *params,
 		}
 		p = c;
 
+		if (bias)
+			continue;
+
 /* Count this character just once: when we're not going to see it anymore */
 		if (!strchr(&newpass[length], c))
 			chars++;
@@ -161,31 +164,31 @@ static int is_simple(const passwdqc_params_qc_t *params,
 	switch (classes) {
 	case 1:
 		if (length + bias >= params->min[0] &&
-		    chars >= expected_different(10, params->min[0]) - 1)
+		    (!chars || chars >= expected_different(10, params->min[0]) - 1))
 			return 0;
 		return 1;
 
 	case 2:
 		if (length + bias >= params->min[1] &&
-		    chars >= expected_different(36, params->min[1]) - 1)
+		    (!chars || chars >= expected_different(36, params->min[1]) - 1))
 			return 0;
 		if (!params->passphrase_words ||
 		    words < params->passphrase_words)
 			continue;
 		if (length + passphrase_bias >= params->min[2] &&
-		    chars >= expected_different(27, params->min[2]) - 1)
+		    (!chars || chars >= expected_different(27, params->min[2]) - 1))
 			return 0;
 		continue;
 
 	case 3:
 		if (length + bias >= params->min[3] &&
-		    chars >= expected_different(62, params->min[3]) - 1)
+		    (!chars || chars >= expected_different(62, params->min[3]) - 1))
 			return 0;
 		continue;
 
 	case 4:
 		if (length + bias >= params->min[4] &&
-		    chars >= expected_different(95, params->min[4]) - 1)
+		    (!chars || chars >= expected_different(95, params->min[4]) - 1))
 			return 0;
 		continue;
 	}
