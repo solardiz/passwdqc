@@ -325,10 +325,10 @@ static int is_based(const passwdqc_params_qc_t *params,
 
 	scratch = NULL;
 
-	for (i = 0; i <= length - params->match_length; i++)
 	for (j = potential_match_length; j >= params->match_length; j--)
+	for (i = 0; i <= length - params->match_length; i++)
 	if (i + j <= length) {
-		int bias, invariant = 0;
+		int bias;
 		for (p = haystack; (p = memchr(p, needle[i], haystack_length - (p - haystack))) &&
 		    j <= haystack_length - (p - haystack); p++)
 		if (needle[i + 1] == p[1] && (j <= 2 || !memcmp(p + 2, &needle[i + 2], j - 2))) {
@@ -347,10 +347,8 @@ static int is_based(const passwdqc_params_qc_t *params,
 					clean(scratch);
 					return 1;
 				}
-				break;
 			} else { /* discount */
-				int passphrase_bias = 0;
-				invariant = 1;
+				int passphrase_bias = 0, invariant = 1;
 				/* discount j - (match_length - 1) chars */
 				bias = (int)params->match_length - 1 - j;
 				if ((flags & F_MODE) == F_WORD) { /* words */
@@ -372,11 +370,9 @@ static int is_based(const passwdqc_params_qc_t *params,
 				if (is_simple(params, needle_original, bias, passphrase_bias))
 					return 1;
 				if (invariant) /* optimization */
-					break; /* skip further matches for same length */
+					return 0;
 			}
 		}
-		if (invariant) /* optimization */
-			break; /* skip lower lengths, move to next position */
 	}
 
 	clean(scratch);
