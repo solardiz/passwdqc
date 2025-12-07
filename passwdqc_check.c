@@ -271,7 +271,7 @@ static int is_based(const passwdqc_params_qc_t *params,
     char *needle, const char *needle_original, unsigned int flags)
 {
 	char *scratch;
-	int length, haystack_length;
+	int length, potential_match_length;
 	int i, j;
 	const char *p;
 	int worst_bias, worst_passphrase_bias;
@@ -282,16 +282,34 @@ static int is_based(const passwdqc_params_qc_t *params,
 	if (params->match_length < 0)	/* misconfigured */
 		return 1;
 
+	{
+		char haystack_mask[0x100] = {0};
+		for (p = haystack, i = 0; *p; p++, i++)
+			haystack_mask[(unsigned char)*p] = 1;
+
+		potential_match_length = 0;
+		for (p = needle, j = 0; *p; p++) {
+			if (haystack_mask[(unsigned char)*p]) {
+				if (++j >= i)
+					break;
+			} else {
+				if (j > potential_match_length)
+					potential_match_length = j;
+				j = 0;
+			}
+		}
+		if (j > potential_match_length)
+			potential_match_length = j;
+	}
+	if (potential_match_length < params->match_length)
+		return 0;
+
 	length = (int)strlen(needle);
 	if (length < params->match_length)
 		return 0;
 
-	haystack_length = (int)strlen(haystack);
-	if (haystack_length < params->match_length)
-		return 0;
-
 	if ((flags & F_MODE) != F_RM) { /* discount */
-		worst_bias = (int)params->match_length - 1 - haystack_length;
+		worst_bias = (int)params->match_length - 1 - potential_match_length;
 		for (i = 0; i < 5; i++) {
 			if (length >= params->min[i] &&
 			    length + worst_bias < params->min[i]) /* matters */
@@ -305,7 +323,7 @@ static int is_based(const passwdqc_params_qc_t *params,
 	worst_bias = worst_passphrase_bias = 0;
 
 	for (i = 0; i <= length - params->match_length; i++)
-	for (j = params->match_length; j <= haystack_length && i + j <= length; j++) {
+	for (j = params->match_length; j <= potential_match_length && i + j <= length; j++) {
 		int bias = 0;
 		char save = needle[i + j];
 		needle[i + j] = 0;
