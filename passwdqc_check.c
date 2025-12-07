@@ -336,7 +336,8 @@ static int is_based(const passwdqc_params_qc_t *params,
 	worst_bias = worst_passphrase_bias = 0;
 
 	for (i = 0; i <= length - params->match_length; i++)
-	for (j = params->match_length; j <= potential_match_length && i + j <= length; j++) {
+	for (j = potential_match_length; j >= params->match_length; j--)
+	if (i + j <= length) {
 		int bias = 0;
 		char save = needle[i + j];
 		needle[i + j] = 0;
@@ -364,11 +365,8 @@ static int is_based(const passwdqc_params_qc_t *params,
 				if ((flags & F_MODE) == F_WORD) { /* words */
 					if (!is_word_by_length(&needle_original[pos], j)) {
 /* Require a 1 character longer match for substrings containing leetspeak */
-						if (!++bias) {
-/* The zero bias optimization further below would be wrong, so skip it */
-							bias--;
+						if (!++bias)
 							break;
-						}
 /* Do discount non-words from passphrases */
 						if (length >= params->min[2] && params->passphrase_words && /* optimization */
 						    (length - j < (params->passphrase_words - 1) * 2 ||
@@ -393,11 +391,7 @@ static int is_based(const passwdqc_params_qc_t *params,
 			}
 		}
 		needle[i + j] = save;
-/* Zero bias implies that there were no matches for this length.  If so,
- * there's no reason to try the next substring length (it would result in
- * no matches as well).  We break out of the substring length loop and
- * proceed with all substring lengths for the next position in needle. */
-		if (!bias)
+		if (bias && bias == worst_bias && bias == worst_passphrase_bias)
 			break;
 	}
 
