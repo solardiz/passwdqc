@@ -1,7 +1,7 @@
 Summary: A password/passphrase strength checking and policy enforcement toolset
 Name: passwdqc
-Version: 2.0.3
-Release: 2.2%{?dist}
+Version: 2.1.0
+Release: 0%{?dist}
 # Two manual pages (pam_passwdqc.8 and passwdqc.conf.5) are under the
 # 3-clause BSD-style license as specified within the files themselves.
 # The rest of the files in this package fall under the terms of
@@ -99,7 +99,6 @@ make %{?_smp_mflags} all locales \
 	CPPFLAGS="-DENABLE_NLS=1 -DHAVE_LIBAUDIT=1 -DLINUX_PAM=1" \
 	CFLAGS_lib="$RPM_OPT_FLAGS -W -DLINUX_PAM -fPIC" \
 	CFLAGS_bin="$RPM_OPT_FLAGS -W" \
-	LDFLAGS="-pie -Wl,-z,defs -Wl,-z,relro -Wl,-z,now $RPM_OPT_FLAGS" \
 	#
 
 %install
@@ -116,6 +115,9 @@ make install install_locales \
 %find_lang passwdqc
 
 %ldconfig_scriptlets -n lib%name
+
+%check
+make check
 
 %files
 
@@ -140,6 +142,11 @@ make install install_locales \
 %_mandir/man1/*.1*
 
 %changelog
+* Sat Feb 28 2026 Solar Designer <solar@openwall.com> 2.1.0-0
+- Update to 2.1.0
+- Drop the explicit linker hardening flags from here (now implied in Makefile)
+- Run "make check" from %%check
+
 * Fri Jan 31 2025 Solar Designer <solar@openwall.com> 2.0.3-2.2
 - Pass -pie -Wl,-z,defs -Wl,-z,relro -Wl,-z,now and RPM_OPT_FLAGS to LDFLAGS
 
